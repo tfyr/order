@@ -3,15 +3,11 @@ from graphene_django import DjangoObjectType
 from nashcart.cart import Cart
 from datetime import datetime
 
+from product.models import Item
 from promocodes.models import Promoused
 from telegram.telegram import send_mess
 
-from order.models import Order, ItemOrder, Status, ItemStatus, Item
-
-
-class ItemType(DjangoObjectType):
-    class Meta:
-        model = Item
+from order.models import Order, ItemOrder, Status, ItemStatus
 
 
 class StatusType(DjangoObjectType):
