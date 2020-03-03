@@ -19,10 +19,10 @@ class OrderType(DjangoObjectType):
     class Meta:
         model = Order
 
+
 class ItemOrderType(DjangoObjectType):
     class Meta:
         model = ItemOrder
-
 
 
 class ItemStatusType(DjangoObjectType):
@@ -162,8 +162,8 @@ class OrderX(graphene.Mutation):
         #send_mess(chat_id, 'Your message goes here')
         try:
             send_mess(448010439, msg) # nash
-            if descr != "test":
-                send_mess(96319578, msg) # brukida
+            #if descr != "test":
+            #    send_mess(96319578, msg) # brukida
         except:
             pass
 

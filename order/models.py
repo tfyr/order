@@ -78,8 +78,8 @@ DELIVERY_CHOICES = (
 )
 
 class Order(models.Model):
-    status = models.ForeignKey(Status, default=DEFAULT_STATUS, on_delete=models.SET_NULL, null=True)
-    customer = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.PROTECT)
+    status = models.ForeignKey(Status, verbose_name='Статус', default=DEFAULT_STATUS, on_delete=models.SET_NULL, null=True)
+    customer = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='Заказчик', null=True, blank=True, on_delete=models.PROTECT)
     name = models.CharField('Имя', max_length=250, default=None, null=True, blank=True)
     phone = models.CharField('Телефон', max_length=40, default=None, null=True, blank=True)
     email = models.CharField('E-mail', max_length=240, default=None, null=True, blank=True)
