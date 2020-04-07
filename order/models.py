@@ -2,8 +2,8 @@ from django.db import models
 
 # Create your models here.
 from django.conf import settings
-from datetime import datetime, date
-from django.contrib.auth.models import User
+#from datetime import datetime, date
+from django.utils import timezone
 from product.models import Item
 
 DEFAULT_STATUS = 1
@@ -89,7 +89,7 @@ class Order(models.Model):
     descr = models.CharField('Примечание', max_length=1255, default=None, null=True, blank=True)
     #delivery_date = models.DateField('Доставка', default=date.today)
     #delivery_period = models.CharField('Время доставки', max_length=10, default=None, null=True, blank=True)
-    orderdate = models.DateTimeField('Дата и время поступления заказа', default= datetime.now)
+    orderdate = models.DateTimeField('Дата и время поступления заказа', default=timezone.now) # datetime.now)
     delivery_type = models.PositiveSmallIntegerField('Тип доставки', default=0, choices=DELIVERY_CHOICES)
     pay_type = models.PositiveSmallIntegerField('Тип оплаты', default=0, null=False, choices=PAY_CHOICES)
     cnt = models.IntegerField(verbose_name="Кол-во позиций", default=0)

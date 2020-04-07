@@ -6,6 +6,7 @@ from datetime import datetime
 from product.models import Item
 from promocodes.models import Promoused
 from telegram.telegram import send_mess
+from django.core.mail import send_mail
 
 from order.models import Order, ItemOrder, Status, ItemStatus
 
@@ -61,9 +62,23 @@ class Query(object):
         return Status.objects.all()
 
 
+
+
+
 class OrderX(graphene.Mutation):
+    """Обьект отправки заказа через graphql"""
+
+    sendEmail = False
+    orderMailTitle = u'Заказ № {0}. Интернет-магазин {1}'
+    sitename = "[имя сайта]"
+    fromEmail="noreply"
+
+    #def __init__(self):
+    #    pass
+
     ok = graphene.Boolean()
     order = graphene.Field(OrderType)
+
     #cart = graphene.List(CartType)
     #cart_summary = graphene.Field(CartSummaryType)
 
@@ -111,9 +126,9 @@ class OrderX(graphene.Mutation):
         deliverydate = args.get('deliverydate')
         deliveryperiod = args.get('deliveryperiod')
         try:
-            dd=datetime.strptime(deliverydate, '%d-%m-%Y')
+            dd = datetime.strptime(deliverydate, '%d-%m-%Y')
         except:
-            dd=None
+            dd = None
 
         order = Order(
             name=name,
@@ -124,10 +139,10 @@ class OrderX(graphene.Mutation):
             flat=flat,
             descr=descr,
             customer=None if info.context.user.is_anonymous else info.context.user,
-            delivery_type = delivery_type,
+            delivery_type=delivery_type,
             pay_type=pay_type,
             delivery_date=dd,
-            delivery_period = deliveryperiod,
+            delivery_period=deliveryperiod,
         )
 
         order.save()
@@ -148,7 +163,7 @@ class OrderX(graphene.Mutation):
             total_price+=itemcart.total_price
             itemorder.save()
 
-        promos=""
+        promos = ""
         promoselected=Promoused.objects.filter(cart_id=cart.cart.id)
         for promo in promoselected:
             promos += promo.code.code + ", "
@@ -157,6 +172,10 @@ class OrderX(graphene.Mutation):
             .format(order.id, name, phone, email, dd.strftime("%d.%m.%Y") if dd else "", "Ул. {}, д. {}, кв. {}".format(street, building, flat) if delivery_type==0 else "Самовывоз",
                     "" if not promos else "Промокоды: {}\n".format(promos),
                     descr, tlg_items, total_price)
+
+        if cls.sendEmail and email:
+            send_mail(cls.orderMailTitle.format(order.id, cls.sitename), msg, cls.fromEmail, [email], fail_silently=True)
+            send_mail(cls.orderMailTitle.format(order.id, cls.sitename), msg, cls.fromEmail, ['nash34@gmail.com'], fail_silently=True)
 
         #chat_id = get_chat_id(last_update(get_updates_json(url)))
         #send_mess(chat_id, 'Your message goes here')
