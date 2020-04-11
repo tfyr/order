@@ -98,7 +98,7 @@ class Order(models.Model):
     delivery_period = models.CharField('Время доставки', max_length=20, default=None, null=True, blank=True)
 
     def __str__(self):
-        return u'Дата заказа: ' + str(self.orderdate) + \
+        return u'Дата заказа: ' + (self.orderdate.strftime("%d-%m-%Y %H:%M") if self.orderdate else "без даты") + \
                u', ' + nvl(self.name) + \
                u', тел: ' + nvl(self.phone) + \
                u', адрес: ' + nvl(self.street) + \

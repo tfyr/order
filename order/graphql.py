@@ -72,6 +72,7 @@ class OrderX(graphene.Mutation):
     orderMailTitle = u'Заказ № {0}. Интернет-магазин {1}'
     sitename = "[имя сайта]"
     fromEmail="noreply"
+    telegram_chat_ids = ()
 
     #def __init__(self):
     #    pass
@@ -159,7 +160,7 @@ class OrderX(graphene.Mutation):
                 cnt=itemcart.quantity,
                 price=itemcart.total_price/itemcart.quantity,
                 summa=itemcart.total_price)
-            tlg_items+="{} x {} = {} ₽\n".format(item.name, itemcart.quantity, itemcart.total_price)
+            tlg_items+="{} x {} = {:.2f} ₽\n".format(item.name, itemcart.quantity, itemcart.total_price)
             total_price+=itemcart.total_price
             itemorder.save()
 
@@ -168,8 +169,8 @@ class OrderX(graphene.Mutation):
         for promo in promoselected:
             promos += promo.code.code + ", "
         promoselected.delete()
-        msg = u"Заказ #{}\nИмя: {}\nТел: {}\nEmail: {}\nДата доставки: {}\n{}\n{}Примечание: {}\n\n{}\nИтого: {} ₽"\
-            .format(order.id, name, phone, email, dd.strftime("%d.%m.%Y") if dd else "", "Ул. {}, д. {}, кв. {}".format(street, building, flat) if delivery_type==0 else "Самовывоз",
+        msg = u"Заказ #{}\nИмя: {}\nТел: {}\nEmail: {}\nДата доставки: {}\n{}\n{}Примечание: {}\n\n{}\nИтого: {} ₽" \
+            .format(order.id, name, phone, email, dd.strftime("%d.%m.%Y") if dd else "", "Адрес доставки: ул. {}, д. {}, кв. {}".format(street, building, flat) if delivery_type==0 else "Самовывоз",
                     "" if not promos else "Промокоды: {}\n".format(promos),
                     descr, tlg_items, total_price)
 
@@ -180,7 +181,9 @@ class OrderX(graphene.Mutation):
         #chat_id = get_chat_id(last_update(get_updates_json(url)))
         #send_mess(chat_id, 'Your message goes here')
         try:
-            send_mess(448010439, msg) # nash
+            for chat_id in cls.telegram_chat_ids:
+                send_mess(chat_id, msg)
+                #send_mess(448010439, msg) # nash
             #if descr != "test":
             #    send_mess(96319578, msg) # brukida
         except:
