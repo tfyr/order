@@ -1,4 +1,7 @@
+import json
+
 import graphene
+from django.conf import settings
 from graphene_django import DjangoObjectType
 from nashcart.cart import Cart
 from datetime import datetime
@@ -72,6 +75,7 @@ class OrderX(graphene.Mutation):
     orderMailTitle = u'Заказ № {0}. Интернет-магазин {1}'
     sitename = "[имя сайта]"
     fromEmail="noreply"
+    adminEmail=None
     telegram_chat_ids = ()
 
     #def __init__(self):
@@ -96,6 +100,10 @@ class OrderX(graphene.Mutation):
         #price = graphene.Decimal(required=True)
         deliverydate= graphene.String(required=False)
         deliveryperiod= graphene.String(required=False)
+
+    @classmethod
+    def afterorder(cls):
+        pass
 
     @classmethod
     def mutate(cls, root, info, **args):
@@ -169,7 +177,7 @@ class OrderX(graphene.Mutation):
         for promo in promoselected:
             promos += promo.code.code + ", "
         promoselected.delete()
-        msg = u"Заказ #{}\nИмя: {}\nТел: {}\nEmail: {}\nДата доставки: {}\n{}\n{}Примечание: {}\n\n{}\nИтого: {} ₽" \
+        msg = u"Заказ #{}\nИмя: {}\nТел: {}\nEmail: {}\nДата доставки: {}\n{}\n{}Примечание: {}\n\n{}\nИтого: {:.2f} ₽" \
             .format(order.id, name, phone, email, dd.strftime("%d.%m.%Y") if dd else "", "Адрес доставки: ул. {}, д. {}, кв. {}".format(street, building, flat) if delivery_type==0 else "Самовывоз",
                     "" if not promos else "Промокоды: {}\n".format(promos),
                     descr, tlg_items, total_price)
@@ -177,17 +185,47 @@ class OrderX(graphene.Mutation):
         if cls.sendEmail and email:
             send_mail(cls.orderMailTitle.format(order.id, cls.sitename), msg, cls.fromEmail, [email], fail_silently=True)
             send_mail(cls.orderMailTitle.format(order.id, cls.sitename), msg, cls.fromEmail, ['nash34@gmail.com'], fail_silently=True)
+            if cls.adminEmail:
+                send_mail(cls.orderMailTitle.format(order.id, cls.sitename), msg, cls.fromEmail, [cls.adminEmail], fail_silently=True)
 
-        #chat_id = get_chat_id(last_update(get_updates_json(url)))
+
+        #chat_id = get_chat_id(last_update(get_utelegram_chat_idspdates_json(url)))
         #send_mess(chat_id, 'Your message goes here')
+        arr_btn=[]
+        arr_btn.append([
+            {
+                "text": "В обработке",
+                "callback_data": "set-status-2-{}".format(order.id)
+            }])
+        arr_btn.append([
+            {
+                "text": "Подтверждено",
+                "callback_data": "set-status-3-{}".format(order.id)
+            }])
+
+        arr_btn.append([
+            {
+                "text": "Отменено",
+                "callback_data": "set-status-4-{}".format(order.id)
+            }])
+
         try:
             for chat_id in cls.telegram_chat_ids:
-                send_mess(chat_id, msg)
+                send_mess(
+                    chat_id,
+                    msg,
+                    reply_markup=json.dumps(
+                        {
+                            "inline_keyboard": arr_btn
+                        }
+                    )
+                )
                 #send_mess(448010439, msg) # nash
             #if descr != "test":
             #    send_mess(96319578, msg) # brukida
         except:
             pass
+        cls.afterorder()
 
         cart.clear()
 
