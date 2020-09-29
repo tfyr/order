@@ -18,7 +18,7 @@ class ItemOrderInline(admin.TabularInline):
         widget.can_delete_related = False
         return formset
 
-    fields = ['item', 'cnt', 'price', 'summa', 'status']
+    fields = ['item', 'cnt', 'price', 'summa', 'status', ]
     readonly_fields = ['item', 'summa', ]
     extra = 0
 

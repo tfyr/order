@@ -122,6 +122,7 @@ class ItemOrder(models.Model):
     price = models.DecimalField(verbose_name="Цена", default=0, max_digits=11, decimal_places=2)
     summa = models.DecimalField(verbose_name="Сумма", default=0, max_digits=11, decimal_places=2)
     status = models.ForeignKey(ItemStatus, default=DEFAULT_ITEMSTATUS, on_delete=models.SET_NULL, null=True)
+    reason = models.CharField(verbose_name="Причина", max_length=250, null=True, default=None, blank=True,)
 
     class Meta:
         verbose_name = "Позиция заказа"
